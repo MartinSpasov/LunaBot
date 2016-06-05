@@ -1,0 +1,48 @@
+//-------------------------------Plugins-------------------------------
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+//------------------------General Configuration------------------------
+
+defaultTasks 'tasks'
+
+group='com.innodrive'
+version = "1.0"
+archivesBaseName = project.name
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+dependencies {
+	compile 'com.github.Ullink:simple-slack-api:0.5.1'
+	compile 'com.google.code.gson:gson:2.3.1'
+}
+
+buildscript {
+    repositories {
+		mavenCentral()
+		maven { url "https://jitpack.io" }
+    }
+}
+
+repositories {
+	mavenCentral()
+	maven { url "https://jitpack.io" }
+}
+
+//--------------------------------Tasks--------------------------------
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.13'
+}
+
+task "create-dirs" << {
+   sourceSets*.java.srcDirs*.each { it.mkdirs() }
+   sourceSets*.resources.srcDirs*.each { it.mkdirs() }
+}
+
+//------------------------Plugins Configuration------------------------
+
+jar { manifest.attributes provider: group }
+
