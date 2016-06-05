@@ -27,7 +27,12 @@ public class CommunicationsService {
                 if (session.sessionPersona().getId().equals(event.getSender().getId())) {
                     return;
                 }
-                dock.handleEvent(event);
+                try {
+					dock.handleEvent(event);
+				} catch (Exception e) {
+					// TODO fuck ur couch
+					e.printStackTrace();
+				}
 //                session.sendMessage(event.getChannel(),"Suuure, suuuure... " + event.getMessageContent());
 //                System.out.println("nignog");
                              

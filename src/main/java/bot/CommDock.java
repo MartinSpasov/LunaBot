@@ -2,21 +2,25 @@ package bot;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.google.gson.Gson;
 import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.SlackUser;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 
+import de.vogella.mysql.first.MySQLAccess;
+
 public class CommDock {
 	private SlackSession session;
 	private CopyOnWriteArrayList<UserHandler> userList;
+	private Gson json = new Gson();
 
 	public CommDock(SlackSession session) {
 		this.session = session;
 		userList = new CopyOnWriteArrayList<UserHandler>();
 	}
 
-	public void handleEvent(SlackMessagePosted event) {
+	public void handleEvent(SlackMessagePosted event) throws Exception {
 		SlackChannel channel = event.getChannel();
 		String msg = event.getMessageContent();
 		SlackUser user = event.getSender();
@@ -42,13 +46,13 @@ public class CommDock {
 
 			case -2:
 				if (msg.toLowerCase().contains("luna") || msg.toLowerCase().contains("hi") || msg.toLowerCase().contains("hello")) {
-					session.sendMessage(channel, "Yes sweety, Can I help you with an idea you have?");
+					session.sendMessage(channel, "Yes sweetie, can I help you with a new idea?");
 					userHandler.setLunaState(-1);
 				}
 				break;
 			case -1:
 				if (msg.toLowerCase().charAt(0) == 'y') {
-					session.sendMessage(channel, "Alright then, ill you a few questions that might help you makes sense of your idea!");
+					session.sendMessage(channel, "Alright then, I'll ask you a few questions that might help make sense of your idea!");
 					session.sendMessage(channel, "Hit me up when you're ready! :smile: ");
 					userHandler.setLunaState(0);
 				} else if (msg.toLowerCase().charAt(0) == 'n') {
@@ -59,14 +63,14 @@ public class CommDock {
 				}
 				break;
 			case 0:
-				session.sendMessage(channel, "Ok, " + user.getRealName() + " :grin: If at any point you wanna stop, just tell me!");
-				session.sendMessage(channel, "Let's Being :grin: If at any point you wanna stop, just tell me! Remember to keep your answers as short and clear as possible!");
-				session.sendMessage(channel, "What is the tagline of your idea? Example: \"A bot that helps you order lunch\"");
+				session.sendMessage(channel, "Ok, " + user.getRealName() + " :smile: If at any point you wanna stop, just tell me!");
+				session.sendMessage(channel, "Let's begin :smile: If at any point you wanna stop, just tell me! Remember to keep your answers as short and clear as possible!");
+				session.sendMessage(channel, "What is the tagline of your idea? (example: \"A bot that helps you order lunch\")");
 				userHandler.setLunaState(1);
 				break;
 			case 1:
 				userHandler.getIdeaMap().put(LeanQuestion.TAGLINE , msg);
-				session.sendMessage(channel, "What is the problem that you have encountered?");
+				session.sendMessage(channel, "Thats interesting, what is the problem that made you think of that?");
 				userHandler.setLunaState(2);
 				break;
 	
@@ -78,19 +82,20 @@ public class CommDock {
 				
 			case 3:
 				userHandler.getIdeaMap().put(LeanQuestion.ALTERNATIVES , msg);
-				session.sendMessage(channel, "I am sure you have a better solution! What is it?");
+				session.sendMessage(channel, "I am sure you have a better solution! :thumbsup: What is it?");
 				userHandler.setLunaState(4);
 				break;
 				
 			case 4:
 				userHandler.getIdeaMap().put(LeanQuestion.SOLUTION , msg);
-				session.sendMessage(channel, "What are the advantages your solutions has over the alternatives you just told me?");
+				
+				session.sendMessage(channel, "Ok now, what are the advantages your solution has over the alternatives you just told me?");
 				userHandler.setLunaState(5);
 				break;
 				
 			case 5:
 				userHandler.getIdeaMap().put(LeanQuestion.UNFAIR_ADVANTAGE , msg);
-				session.sendMessage(channel, "What exactly makes your solution so unique?");
+				session.sendMessage(channel, "What exactly makes your solution so unique? :unicorn_face:");
 				userHandler.setLunaState(6);
 				break;	
 				
@@ -102,20 +107,20 @@ public class CommDock {
 				break;	
 			case 7:
 				userHandler.getIdeaMap().put(LeanQuestion.CUSTOMER_SEGMENTS , msg);
-				session.sendMessage(channel, "And who do you think will be the first adopters of this genious idea?");
+				session.sendMessage(channel, "And who do you think will be the first adopters of this genius idea?");
 				userHandler.setLunaState(8);
 				break;	
 				
 			case 8:
 				userHandler.getIdeaMap().put(LeanQuestion.EARLY_ADOPTERS , msg);
 				session.sendMessage(channel, "I'm sure it will take no time for them to adopt it :wink:  ");
-				session.sendMessage(channel, "Set yourselve mesurable realistic goals within a timeframe. What are they?");
+				session.sendMessage(channel, "Set yourselve mesurable realistic goals within a timeframe. What are they? (example: 200 buyers whithin the first 3 months)");
 				userHandler.setLunaState(9);
 				break;
 				
 			case 9:
 				userHandler.getIdeaMap().put(LeanQuestion.KEY_METRICS , msg);
-				session.sendMessage(channel, "What methods are you going to use to promote your idea and reach new potential users?");
+				session.sendMessage(channel, "What platforms are you going to use to promote your idea and reach new potential users?");
 				userHandler.setLunaState(10);
 				break;
 			case 10:
@@ -131,9 +136,11 @@ public class CommDock {
 				break;
 			case 12:
 				userHandler.getIdeaMap().put(LeanQuestion.REVENEUS , msg);
-				session.sendMessage(channel, "This is once of the best ideas I ever heard!!! :heart_decoration:  :heart_decoration:  :heart_decoration: ");
-				session.sendMessage(channel, "Give me a few seconds and I will generate a nice lean diagram for you!");
+				session.sendMessage(channel, "This is one of the best ideas I've ever heard!!! :heart_decoration:  :heart_decoration:  :heart_decoration: ");
+				session.sendMessage(channel, "Give me a few seconds and I will generate a nice lean canvas for you!");
 				session.sendMessage(channel, "//TODO ED MAKE THE DIAGRAM POP HERE");
+				MySQLAccess sql = new MySQLAccess(json.toJson(userHandler));
+				sql.readDataBase();
 				session.sendMessage(session.findChannelByName("innovation"), " Here's " + user.getRealName() + " amazing new idea!!!");
 				session.sendMessage(session.findChannelByName("innovation"), userHandler.mapToString());
 				

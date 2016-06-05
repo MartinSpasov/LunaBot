@@ -14,7 +14,7 @@ public class SlackConnector{
 	private SlackSession session;
 	
 	public void connect() throws IOException{
-        this.session = SlackSessionFactory.createWebSocketSlackSession("xoxb-48204558964-Ed9YdKuQPYxRpd0w6UtgoqYq");
+        this.session = SlackSessionFactory.createWebSocketSlackSession("");
         this.session.connect();
 
     }
